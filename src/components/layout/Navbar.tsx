@@ -148,7 +148,7 @@ const Navbar = () => {
         {/* Mobile menu */}
         <div
           className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+            isOpen ? 'max-h-[900px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <div className="container-custom bg-white dark:bg-slate-800 py-6 space-y-6">
