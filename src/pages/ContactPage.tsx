@@ -148,12 +148,6 @@ const ContactPage = () => {
                 </div>
               </div>
 
-              {/* Map placeholder - would be replaced with actual Google Maps embed */}
-              <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
-                <p className="text-slate-500 dark:text-slate-400">
-                  Mapa será carregado aqui (integração com Google Maps)
-                </p>
-              </div>
             </div>
 
             {/* Contact Form */}
