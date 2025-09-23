@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 0 0 0;
+    --color-secondary: 75 85 99;
+    --color-accent: 218 165 32;
+    --color-light: 255 255 255;
+    --color-dark: 17 24 39;
+    --color-success: 22 163 74;
+    --color-warning: 217 119 6;
+    --color-error: 220 38 38;
+  }
+
+  .dark {
+    --color-primary: 255 255 255;
+    --color-secondary: 229 231 235;
+    --color-accent: 218 165 32;
+    --color-light: 17 24 39;
+    --color-dark: 255 255 255;
+  }
+
+  body {
+    @apply bg-light text-dark dark:bg-dark dark:text-white font-sans transition-colors duration-200;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-bold;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-medium transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-light hover:bg-primary/90 dark:bg-accent dark:hover:bg-accent/90;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-light hover:bg-secondary/90;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary/10 dark:border-accent dark:text-accent dark:hover:bg-accent/10;
+  }
+
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section {
+    @apply py-12 md:py-20;
+  }
+
+  .heading-xl {
+    @apply font-serif text-4xl md:text-5xl font-bold leading-tight;
+  }
+
+  .heading-lg {
+    @apply font-serif text-3xl md:text-4xl font-bold leading-tight;
+  }
+
+  .heading-md {
+    @apply font-serif text-2xl md:text-3xl font-bold leading-tight;
+  }
+
+  .heading-sm {
+    @apply font-serif text-xl md:text-2xl font-bold leading-tight;
+  }
+
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200;
+  }
+}
