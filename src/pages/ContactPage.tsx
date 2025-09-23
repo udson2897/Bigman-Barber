@@ -137,6 +137,12 @@ const ContactPage = () => {
                         Facebook
                       </a>
                       
+                      <a href="https://" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-slate-600 dark:text-slate-400 hover:text-accent">
+                      Whatsapp</a>
+                      
                     </div>
                   </div>
                 </div>
