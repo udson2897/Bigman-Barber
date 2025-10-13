@@ -4,29 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../lib/auth';
-
-const barbers = [
-  {
-    id: 1,
-    name: 'PW Barber',
-    image: 'https://imagizer.imageshack.com/v2/640x480q70/924/yoCw8H.jpg',
-  },
-  {
-    id: 2,
-    name: 'Nilde Santos',
-    image: 'https://imagizer.imageshack.com/v2/640x480q70/923/Nh00KJ.jpg',
-  },
-  {
-    id: 3,
-    name: 'Regis Barber',
-    image: 'https://imagizer.imageshack.com/v2/640x480q70/924/MV30EK.jpg',
-  },
-  {
-    id: 4,
-    name: 'Ruan C. Barber',
-    image: 'https://imagizer.imageshack.com/v2/640x480q70/924/3390wD.jpg',
-  },
-];
+import { useBarberStore } from '../lib/store';
 
 const services = [
   { id: 1, name: 'Corte só máquina', price: 18.00},
@@ -73,6 +51,7 @@ const AppointmentPage = () => {
   }, []);
 
   const { user, isAuthenticated } = useAuthStore();
+  const { barbers, fetchBarbers } = useBarberStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
@@ -93,6 +72,9 @@ const AppointmentPage = () => {
 
   // Auto-fill user data when user is authenticated
   useEffect(() => {
+    // Fetch barbers
+    fetchBarbers();
+    
     if (isAuthenticated && user) {
       console.log('🔄 Auto-filling user data:', user);
       setFormData({
@@ -557,7 +539,7 @@ const AppointmentPage = () => {
                   <div className="mb-8">
                     <h3 className="font-bold text-lg mb-4">Profissional</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {barbers.map((barber) => (
+                      {barbers.filter(b => b.is_active).map((barber) => (
                         <div 
                           key={barber.id}
                           onClick={() => handleBarberSelect(barber.id)}
@@ -568,12 +550,15 @@ const AppointmentPage = () => {
                           }`}
                         >
                           <img 
-                            src={barber.image}
+                            src={barber.image_url || '/default-barber.jpg'}
                             alt={barber.name}
                             className="w-12 h-12 rounded-full object-cover"
                           />
                           <div className="flex-1">
                             <h4 className="font-medium">{barber.name}</h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              Bancada {barber.workstation_number}
+                            </p>
                           </div>
                           <div 
                             className={`w-6 h-6 rounded-full border flex items-center justify-center ${
@@ -889,8 +874,8 @@ const AppointmentPage = () => {
                     
                     {!isAuthenticated && (
                       <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mt-4">
-                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                          💡 <strong>Dica:</strong> Faça login para ter seus dados preenchidos automaticamente nos próximos agendamentos!
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          💡 <strong>Dica:</strong> Crie uma conta para agendar mais rapidamente nas próximas vezes. Seus dados serão salvos automaticamente!
                         </p>
                       </div>
                     )}

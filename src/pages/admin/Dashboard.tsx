@@ -6,6 +6,8 @@ import { supabase } from '../../lib/supabase';
 import { useAdminStore, useProductStore } from '../../lib/store';
 import { useNavigate } from 'react-router-dom';
 import { ProductManagement } from '../../components/admin/ProductManagement';
+import { FinancialDashboard } from '../../components/admin/FinancialDashboard';
+import { BarberManagement } from '../../components/admin/BarberManagement';
 
 interface Appointment {
   id: string;
@@ -39,7 +41,7 @@ const AdminDashboard = () => {
   const [editingAppointment, setEditingAppointment] = useState<string | null>(null);
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
-  const [activeTab, setActiveTab] = useState('appointments');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
 
   // Check admin status and update activity
@@ -273,6 +275,16 @@ const AdminDashboard = () => {
         {/* Tabs */}
         <div className="flex border-b border-slate-200 dark:border-slate-700 mb-8 overflow-x-auto">
           <button 
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-6 py-3 font-medium text-lg whitespace-nowrap ${
+              activeTab === 'dashboard' 
+                ? 'border-b-2 border-accent text-accent' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-accent'
+            }`}
+          >
+            Dashboard
+          </button>
+          <button 
             onClick={() => setActiveTab('appointments')}
             className={`px-6 py-3 font-medium text-lg whitespace-nowrap ${
               activeTab === 'appointments' 
@@ -293,7 +305,21 @@ const AdminDashboard = () => {
             <Package className="h-5 w-5" />
             <span>Produtos</span>
           </button>
+          <button 
+            onClick={() => setActiveTab('barbers')}
+            className={`px-6 py-3 font-medium text-lg whitespace-nowrap flex items-center space-x-2 ${
+              activeTab === 'barbers' 
+                ? 'border-b-2 border-accent text-accent' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-accent'
+            }`}
+          >
+            <User className="h-5 w-5" />
+            <span>Barbeiros</span>
+          </button>
         </div>
+
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && <FinancialDashboard />}
 
         {/* Appointments Tab */}
         {activeTab === 'appointments' && (
@@ -508,6 +534,9 @@ const AdminDashboard = () => {
 
         {/* Products Tab */}
         {activeTab === 'products' && <ProductManagement />}
+
+        {/* Barbers Tab */}
+        {activeTab === 'barbers' && <BarberManagement />}
       </div>
     </div>
   );

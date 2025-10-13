@@ -137,17 +137,17 @@ const ContactPage = () => {
                         Facebook
                       </a>
                       
-                      <a href="https://wa.me/5561996786027?text=Olá , gostaria de mais informações."
-                target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-slate-600 dark:text-slate-400 hover:text-accent">
-                      Whatsapp</a>
-                      
                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* Map placeholder - would be replaced with actual Google Maps embed */}
+              <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                <p className="text-slate-500 dark:text-slate-400">
+                  Mapa será carregado aqui (integração com Google Maps)
+                </p>
+              </div>
             </div>
 
             {/* Contact Form */}

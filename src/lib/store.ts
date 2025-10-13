@@ -1,6 +1,108 @@
 import { create } from 'zustand';
 import { supabase } from './supabase';
 
+interface Barber {
+  id: number;
+  name: string;
+  image_url: string;
+  workstation_number: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface BarberState {
+  barbers: Barber[];
+  loading: boolean;
+  error: string | null;
+  fetchBarbers: () => Promise<void>;
+  addBarber: (barber: Omit<Barber, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateBarber: (id: number, updates: Partial<Barber>) => Promise<void>;
+  deleteBarber: (id: number) => Promise<void>;
+  clearError: () => void;
+}
+
+export const useBarberStore = create<BarberState>((set, get) => ({
+  barbers: [],
+  loading: false,
+  error: null,
+  
+  clearError: () => set({ error: null }),
+  
+  fetchBarbers: async () => {
+    set({ loading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from('barbers')
+        .select('*')
+        .order('workstation_number', { ascending: true });
+
+      if (error) throw error;
+      
+      set({ barbers: data || [], loading: false });
+    } catch (error: any) {
+      set({ 
+        error: `Erro ao carregar barbeiros: ${error.message}`,
+        loading: false 
+      });
+    }
+  },
+  
+  addBarber: async (barber) => {
+    try {
+      const { data, error } = await supabase
+        .from('barbers')
+        .insert([barber])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      await get().fetchBarbers();
+    } catch (error: any) {
+      set({ 
+        error: `Erro ao adicionar barbeiro: ${error.message}`
+      });
+      throw error;
+    }
+  },
+  
+  updateBarber: async (id, updates) => {
+    try {
+      const { error } = await supabase
+        .from('barbers')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      await get().fetchBarbers();
+    } catch (error: any) {
+      set({ 
+        error: `Erro ao atualizar barbeiro: ${error.message}`
+      });
+      throw error;
+    }
+  },
+  
+  deleteBarber: async (id) => {
+    try {
+      const { error } = await supabase
+        .from('barbers')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      await get().fetchBarbers();
+    } catch (error: any) {
+      set({ 
+        error: `Erro ao remover barbeiro: ${error.message}`
+      });
+    }
+  },
+}));
+
 interface AdminState {
   isAdmin: boolean;
   adminEmail: string;
