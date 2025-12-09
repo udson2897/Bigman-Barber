@@ -84,4 +84,4 @@ export const UserMenu = ({ user, onLogout }: UserMenuProps) => {
     </div>
   );
 };
-export default Navbar;
+
