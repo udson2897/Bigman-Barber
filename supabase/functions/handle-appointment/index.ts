@@ -52,7 +52,8 @@ Deno.serve(async (req) => {
         user_phone: appointmentData.phone,
         service_id: appointmentData.serviceId,
         service_name: appointmentData.serviceName,
-        service_price: appointmentData.servicePrice, // Save as numeric value
+        service_price: appointmentData.servicePrice,
+        services_data: appointmentData.servicesData || null,
         barber_id: appointmentData.barberId,
         appointment_date: appointmentData.date,
         appointment_time: appointmentData.time,
@@ -70,81 +71,8 @@ Deno.serve(async (req) => {
     console.log('Appointment saved successfully:', data)
 
     try {
-      // Email content for admin
-      const adminEmailContent = `
-        Novo agendamento PENDENTE:
-        
-        Cliente: ${appointmentData.name}
-        Email: ${appointmentData.email}
-        Telefone: ${appointmentData.phone}
-        Serviço: ${appointmentData.serviceName} - R$ ${appointmentData.servicePrice.toFixed(2)}
-        Profissional: ${appointmentData.barberName || 'Não especificado'}
-        Data: ${appointmentData.date}
-        Horário: ${appointmentData.time}
-        Unidade: ${appointmentData.locationName || 'Não especificado'}
-        
-        Status: PENDENTE - Aguardando confirmação do administrador
-      `
-
-      // Send email to admin
-      const adminEmailResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: 'BIG MAN Barber <agendamento@bigman.com.br>',
-          to: ['admin@bigman.com.br'],
-          subject: 'Novo Agendamento PENDENTE - BIG MAN Barber',
-          text: adminEmailContent,
-        })
-      })
-
-      if (!adminEmailResponse.ok) {
-        console.error('Admin email error:', await adminEmailResponse.text())
-      }
-
-      // Email content for customer - informing that appointment is pending
-      const customerEmailContent = `
-        Olá ${appointmentData.name},
-
-        Seu agendamento foi recebido e está PENDENTE de confirmação!
-
-        Detalhes do agendamento:
-        
-        Serviço: ${appointmentData.serviceName} - R$ ${appointmentData.servicePrice.toFixed(2)}
-        Profissional: ${appointmentData.barberName || 'Não especificado'}
-        Data: ${appointmentData.date}
-        Horário: ${appointmentData.time}
-        Unidade: ${appointmentData.locationName || 'Não especificado'}
-
-        Status: PENDENTE
-
-        Você receberá uma confirmação em breve via WhatsApp e email assim que o agendamento for aprovado pelo nosso time.
-
-        Atenciosamente,
-        Equipe BIG MAN Barber
-      `
-
-      // Send confirmation email to customer
-      const customerEmailResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: 'BIG MAN Barber <agendamento@bigman.com.br>',
-          to: [appointmentData.email],
-          subject: 'Agendamento Recebido - Aguardando Confirmação - BIG MAN Barber',
-          text: customerEmailContent,
-        })
-      })
-
-      if (!customerEmailResponse.ok) {
-        console.error('Customer email error:', await customerEmailResponse.text())
-      }
+      console.log('📧 Email notifications would be sent here (Resend not configured)')
+      console.log('✅ Appointment saved successfully without email notifications')
     } catch (emailError) {
       console.error('Email sending error:', emailError)
       // Continue execution even if email fails

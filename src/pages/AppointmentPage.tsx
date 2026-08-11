@@ -53,7 +53,7 @@ const AppointmentPage = () => {
   const { user, isAuthenticated } = useAuthStore();
   const { barbers, fetchBarbers } = useBarberStore();
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -205,11 +205,11 @@ const AppointmentPage = () => {
     setError(null);
 
     try {
-      const selectedServiceData = services.find(s => s.id === selectedService);
+      const selectedServicesData = services.filter(s => selectedServices.includes(s.id));
       const selectedBarberData = barbers.find(b => b.id === selectedBarber);
       const selectedLocationData = locations.find(l => l.id === selectedLocation);
 
-      if (!selectedServiceData || !selectedBarberData || !selectedLocationData || !selectedDate || !selectedTime) {
+      if (selectedServicesData.length === 0 || !selectedBarberData || !selectedLocationData || !selectedDate || !selectedTime) {
         throw new Error('Missing required appointment information');
       }
 
@@ -219,18 +219,25 @@ const AppointmentPage = () => {
       // Get user session for authenticated requests
       const { data: { session } } = await supabase.auth.getSession();
 
+      const totalPrice = selectedServicesData.reduce((sum, s) => sum + s.price, 0);
+
       const appointmentData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        serviceId: selectedService,
-        serviceName: selectedServiceData.name,
-        servicePrice: selectedServiceData.price, // Send as number
+        serviceIds: selectedServices,
+        serviceNames: selectedServicesData.map(s => s.name),
+        servicesData: selectedServicesData.map(s => ({ id: s.id, name: s.name, price: s.price })),
+        totalPrice,
+        // Keep legacy fields for backward compatibility
+        serviceId: selectedServices[0],
+        serviceName: selectedServicesData[0]?.name,
+        servicePrice: selectedServicesData[0]?.price,
         barberId: selectedBarber,
         barberName: selectedBarberData.name,
         locationId: selectedLocation,
         locationName: selectedLocationData.name,
-        date: formattedDate, // Use formatted date
+        date: formattedDate,
         time: selectedTime
       };
 
@@ -289,7 +296,9 @@ const AppointmentPage = () => {
   };
 
   const handleServiceSelect = (id: number) => {
-    setSelectedService(id);
+    setSelectedServices(prev =>
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
   };
 
   const handleBarberSelect = (id: number) => {
@@ -485,16 +494,17 @@ const AppointmentPage = () => {
               {/* Step 1: Choose Service */}
               {currentStep === 1 && (
                 <div>
-                  <h2 className="heading-md mb-8">Escolha o Serviço</h2>
-                  
+                  <h2 className="heading-md mb-2">Escolha os Serviços</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mb-8">Você pode selecionar um ou mais serviços (exemplo: corte + barba)</p>
+
                   <div className="space-y-4 mb-8">
                     {services.map((service) => (
-                      <div 
+                      <div
                         key={service.id}
                         onClick={() => handleServiceSelect(service.id)}
                         className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                          selectedService === service.id 
-                            ? 'border-accent bg-accent/5' 
+                          selectedServices.includes(service.id)
+                            ? 'border-accent bg-accent/5'
                             : 'border-slate-200 dark:border-slate-700 hover:border-accent'
                         }`}
                       >
@@ -504,25 +514,34 @@ const AppointmentPage = () => {
                           </div>
                           <div className="flex items-center space-x-4">
                             <span className="font-bold text-accent">R$ {service.price.toFixed(2)}</span>
-                            <div 
-                              className={`w-6 h-6 rounded-full border flex items-center justify-center ${
-                                selectedService === service.id 
-                                  ? 'border-accent bg-accent text-white' 
+                            <div
+                              className={`w-6 h-6 rounded border flex items-center justify-center ${
+                                selectedServices.includes(service.id)
+                                  ? 'border-accent bg-accent text-white'
                                   : 'border-slate-300 dark:border-slate-600'
                               }`}
                             >
-                              {selectedService === service.id && <Check className="w-4 h-4" />}
+                              {selectedServices.includes(service.id) && <Check className="w-4 h-4" />}
                             </div>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  
+
+                  {selectedServices.length > 0 && (
+                    <div className="bg-accent/10 border border-accent rounded-lg p-4 mb-8">
+                      <p className="font-bold text-accent mb-2">Total: R$ {services.filter(s => selectedServices.includes(s.id)).reduce((sum, s) => sum + s.price, 0).toFixed(2)}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {selectedServices.length} serviço{selectedServices.length !== 1 ? 's' : ''} selecionado{selectedServices.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex justify-end">
-                    <button 
+                    <button
                       onClick={nextStep}
-                      disabled={!selectedService}
+                      disabled={selectedServices.length === 0}
                       className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Próximo
@@ -736,13 +755,27 @@ const AppointmentPage = () => {
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3">
                         <Scissors className="w-5 h-5 text-accent mt-0.5" />
-                        <div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Serviço</p>
-                          <p className="font-medium">
-                            {services.find(s => s.id === selectedService)?.name}
-                            {' - '}
-                            R$ {services.find(s => s.id === selectedService)?.price.toFixed(2)}
-                          </p>
+                        <div className="flex-1">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Serviços Selecionados</p>
+                          <div className="space-y-2 mt-2">
+                            {services
+                              .filter(s => selectedServices.includes(s.id))
+                              .map(service => (
+                                <div key={service.id} className="flex justify-between text-sm font-medium">
+                                  <span>{service.name}</span>
+                                  <span className="text-accent">R$ {service.price.toFixed(2)}</span>
+                                </div>
+                              ))}
+                          </div>
+                          <div className="border-t border-slate-300 dark:border-slate-600 mt-2 pt-2 flex justify-between font-bold">
+                            <span>Total:</span>
+                            <span className="text-accent">
+                              R$ {services
+                                .filter(s => selectedServices.includes(s.id))
+                                .reduce((sum, s) => sum + s.price, 0)
+                                .toFixed(2)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       
@@ -914,10 +947,16 @@ const AppointmentPage = () => {
                   <div className="flex items-start space-x-3">
                     <Scissors className="w-5 h-5 text-accent mt-0.5" />
                     <div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Serviço</p>
-                      <p className="font-medium">
-                        {services.find(s => s.id === selectedService)?.name} - R$ {services.find(s => s.id === selectedService)?.price.toFixed(2)}
-                      </p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Serviços</p>
+                      <div className="space-y-1">
+                        {services
+                          .filter(s => selectedServices.includes(s.id))
+                          .map(service => (
+                            <p key={service.id} className="font-medium">
+                              {service.name} - R$ {service.price.toFixed(2)}
+                            </p>
+                          ))}
+                      </div>
                     </div>
                   </div>
                   

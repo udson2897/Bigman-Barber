@@ -12,7 +12,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2">
               <Scissors className="h-8 w-8 text-accent" />
               <span className="text-xl font-bold font-serif tracking-wider">
-                BIG MAN <span className="text-accent">Barber</span>
+                Barber <span className="text-accent">Linker</span>
               </span>
             </div>
             <p className="text-slate-400 max-w-xs">

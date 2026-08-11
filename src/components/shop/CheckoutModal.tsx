@@ -227,12 +227,13 @@ Data: ${new Date().toLocaleString('pt-BR')}`;
   };
 
   const validateStep1 = () => {
-    const basicValidation = customerData.name.trim() && 
-           customerData.phone.trim() && 
-           customerData.address.trim() && 
-           customerData.neighborhood.trim() && 
-           customerData.city.trim() && 
-           customerData.state.trim() && 
+    const basicValidation = customerData.email.trim() &&
+           customerData.name.trim() &&
+           customerData.phone.trim() &&
+           customerData.address.trim() &&
+           customerData.neighborhood.trim() &&
+           customerData.city.trim() &&
+           customerData.state.trim() &&
            customerData.zipCode.trim();
     return basicValidation;
   };
@@ -261,6 +262,21 @@ Data: ${new Date().toLocaleString('pt-BR')}`;
         {step === 1 && (
           <div className="p-6">
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 dark:text-white">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={customerData.email}
+                  onChange={handleInputChange}
+                  placeholder="seu@email.com"
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-md p-3 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1 dark:text-white">
                   Nome completo *
@@ -433,6 +449,10 @@ Data: ${new Date().toLocaleString('pt-BR')}`;
                   <Phone className="h-4 w-4 text-accent" />
                   <span className="dark:text-white">{customerData.phone}</span>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-accent font-bold">@</span>
+                  <span className="dark:text-white">{customerData.email}</span>
+                </div>
                 <div className="flex items-start space-x-2">
                   <MapPin className="h-4 w-4 text-accent mt-0.5" />
                   <div className="dark:text-white">
@@ -460,18 +480,17 @@ Data: ${new Date().toLocaleString('pt-BR')}`;
               <div className="space-y-3">
                 {cartItems.map(item => {
                   const product = products.find(p => p.id === item.id);
-                  const size = itemSizes[item.id];
                   return product ? (
                     <div key={item.id} className="flex items-center space-x-3">
-                      <img 
-                        src={product.image_url} 
+                      <img
+                        src={product.image_url}
                         alt={product.name}
                         className="w-12 h-12 object-cover rounded"
                       />
                       <div className="flex-1">
                         <p className="font-medium dark:text-white">{product.name}</p>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                          {size && ` • Tamanho: ${size}`}
+                          Qtd: {item.quantity}
                         </p>
                       </div>
                       <span className="font-bold dark:text-white">

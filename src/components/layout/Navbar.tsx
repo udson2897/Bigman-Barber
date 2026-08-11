@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X, Scissors, Moon, Sun, User } from 'lucide-react';
@@ -71,7 +70,7 @@ const Navbar = () => {
             <Link to="/" className="flex items-center space-x-2">
               <Scissors className="h-8 w-8 text-accent" />
               <span className="text-xl font-bold font-serif tracking-wider">
-                BIG MAN <span className="text-accent">Barber</span>
+                Barber <span className="text-accent">Linker</span>
               </span>
             </Link>
 
@@ -261,4 +260,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

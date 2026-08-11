@@ -9,6 +9,12 @@ import { ProductManagement } from '../../components/admin/ProductManagement';
 import { FinancialDashboard } from '../../components/admin/FinancialDashboard';
 import { BarberManagement } from '../../components/admin/BarberManagement';
 
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+}
+
 interface Appointment {
   id: string;
   user_name: string;
@@ -17,6 +23,7 @@ interface Appointment {
   service_id: number;
   service_name: string;
   service_price: number;
+  services_data: Service[] | null;
   barber_id: number;
   appointment_date: string;
   appointment_time: string;
@@ -140,19 +147,24 @@ const AdminDashboard = () => {
       const appointment = appointments.find(apt => apt.id === id);
       if (appointment) {
         let message = '';
-        
+
         // Format the date properly for WhatsApp message
         const appointmentDate = new Date(appointment.appointment_date + 'T00:00:00');
         const formattedDate = format(appointmentDate, "dd 'de' MMMM", { locale: ptBR });
-        
+
+        // Get services and total price
+        const services = getServicesDisplay(appointment);
+        const servicesText = services.map(s => `${s.name} - R$ ${s.price.toFixed(2)}`).join('\n');
+        const totalPrice = getTotalPrice(appointment);
+
         switch (status) {
           case 'confirmed':
             message = `🎉 Seu agendamento foi CONFIRMADO!\n\n` +
                      `📅 Data: ${formattedDate}\n` +
-                     `⏰ Horário: ${appointment.appointment_time}\n` +
-                     `✂️ Serviço: ${appointment.service_name || 'Serviço não especificado'}\n` +
+                     `⏰ Horário: ${formatAppointmentTime(appointment.appointment_time)}\n` +
+                     `✂️ Serviços:\n${servicesText}\n` +
                      `👤 Profissional: ${barberNames[appointment.barber_id] || 'Profissional não especificado'}\n` +
-                     `💰 Valor: R$ ${appointment.service_price ? appointment.service_price.toFixed(2) : 'Valor não especificado'}\n\n` +
+                     `💰 Total: R$ ${totalPrice.toFixed(2)}\n\n` +
                      `Aguardamos você na BIG MAN Barber! 💪`;
             break;
           case 'cancelled':
@@ -193,13 +205,18 @@ const AdminDashboard = () => {
         // Format the new date properly for WhatsApp message
         const appointmentDate = new Date(newDate + 'T00:00:00');
         const formattedDate = format(appointmentDate, "dd 'de' MMMM", { locale: ptBR });
-        
+
+        // Get services and total price
+        const services = getServicesDisplay(appointment);
+        const servicesText = services.map(s => `${s.name} - R$ ${s.price.toFixed(2)}`).join('\n');
+        const totalPrice = getTotalPrice(appointment);
+
         const message = `📅 Seu agendamento foi ALTERADO!\n\n` +
                        `🆕 Nova data: ${formattedDate}\n` +
                        `🆕 Novo horário: ${newTime}\n` +
-                       `✂️ Serviço: ${appointment.service_name || 'Serviço não especificado'}\n` +
+                       `✂️ Serviços:\n${servicesText}\n` +
                        `👤 Profissional: ${barberNames[appointment.barber_id] || 'Profissional não especificado'}\n` +
-                       `💰 Valor: R$ ${appointment.service_price ? appointment.service_price.toFixed(2) : 'Valor não especificado'}\n\n` +
+                       `💰 Total: R$ ${totalPrice.toFixed(2)}\n\n` +
                        `Aguardamos você na BIG MAN Barber! 💪`;
 
         await sendWhatsAppNotification(appointment.user_phone, message);
@@ -248,6 +265,27 @@ const AdminDashboard = () => {
       console.error('❌ Error formatting time:', timeString, error);
       return timeString;
     }
+  };
+
+  // Helper function to get services for display
+  const getServicesDisplay = (appointment: Appointment) => {
+    if (appointment.services_data && appointment.services_data.length > 0) {
+      return appointment.services_data;
+    }
+    // Fallback to single service
+    return [{
+      id: appointment.service_id,
+      name: appointment.service_name || 'Serviço não especificado',
+      price: appointment.service_price || 0
+    }];
+  };
+
+  // Helper function to get total price
+  const getTotalPrice = (appointment: Appointment) => {
+    if (appointment.services_data && appointment.services_data.length > 0) {
+      return appointment.services_data.reduce((sum, s) => sum + (s.price || 0), 0);
+    }
+    return appointment.service_price || 0;
   };
 
   if (!isAdmin) {
@@ -395,20 +433,24 @@ const AdminDashboard = () => {
                                 </div>
                               </div>
 
-                              <div className="flex items-center space-x-2">
-                                <Scissors className="h-5 w-5 text-accent" />
-                                <div>
-                                  <p className="text-sm text-slate-500 dark:text-slate-300">Serviço</p>
-                                  <p className="font-medium dark:text-white">
-                                    {appointment.service_name ? (
-                                      <>
-                                        {appointment.service_name}
-                                        {appointment.service_price && ` - R$ ${appointment.service_price.toFixed(2)}`}
-                                      </>
-                                    ) : (
-                                      'Serviço não especificado'
-                                    )}
+                              <div className="flex items-start space-x-2">
+                                <Scissors className="h-5 w-5 text-accent mt-0.5" />
+                                <div className="flex-1">
+                                  <p className="text-sm text-slate-500 dark:text-slate-300">
+                                    {getServicesDisplay(appointment).length > 1 ? 'Serviços' : 'Serviço'}
                                   </p>
+                                  <div className="space-y-1">
+                                    {getServicesDisplay(appointment).map((service) => (
+                                      <div key={service.id} className="font-medium dark:text-white">
+                                        {service.name} - R$ {service.price.toFixed(2)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {getServicesDisplay(appointment).length > 1 && (
+                                    <div className="border-t border-slate-300 dark:border-slate-600 mt-2 pt-2 font-bold text-accent">
+                                      Total: R$ {getTotalPrice(appointment).toFixed(2)}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>

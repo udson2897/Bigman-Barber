@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
+import { X, Eye, EyeOff, User, Mail, Lock, Phone } from 'lucide-react';
 import { useAuthStore } from '../../lib/auth';
 
 interface LoginModalProps {
@@ -13,6 +13,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,6 +24,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
     setEmail('');
     setPassword('');
     setName('');
+    setPhone('');
     setError('');
     setShowPassword(false);
   };
@@ -39,13 +41,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
 
     try {
       if (isLogin) {
-        const { data, error } = await signIn(email, password);
+        const { data, error } = await signIn(email, password, 'client');
         if (error) throw error;
         if (data.user && onLoginSuccess) {
           onLoginSuccess(data.user);
         }
       } else {
-        const { data, error } = await signUp(email, password, name);
+        // Enviando telefone no signup
+        const { data, error } = await signUp(email, password, name, phone);
         if (error) throw error;
         if (data.user && onLoginSuccess) {
           onLoginSuccess(data.user);
@@ -69,7 +72,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
-        {/* Header com gradiente */}
+
+        {/* Header */}
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 text-white relative">
           <button
             onClick={handleClose}
@@ -95,6 +99,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
         {/* Formulário */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Nome */}
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -114,6 +120,27 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
               </div>
             )}
 
+            {/* Telefone */}
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Telefone
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-black"
+                    placeholder="(00) 00000-0000"
+                    required={!isLogin}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
@@ -131,6 +158,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
               </div>
             </div>
 
+            {/* Senha */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Senha
@@ -155,12 +183,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
               </div>
             </div>
 
+            {/* Erros */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
+            {/* Botão */}
             <button
               type="submit"
               disabled={isLoading}
@@ -177,7 +207,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
             </button>
           </form>
 
-          {/* Toggle entre login e cadastro */}
+          {/* Alternar */}
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
@@ -189,6 +219,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
               </button>
             </p>
           </div>
+
         </div>
       </div>
     </div>
